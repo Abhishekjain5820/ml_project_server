@@ -6,7 +6,7 @@ class Database:
         self.pool: Pool = None
 
     async def connect(self):
-        self.pool = await asyncpg.create_pool(user='postgres', database='canteen')
+        self.pool = await asyncpg.create_pool(user='postgres', password='05082002',database='canteen')
 
     async def disconnect(self):
         if self.pool:
@@ -18,7 +18,7 @@ class Database:
     async def insert_csv_data(self):
         try:
             # Connect to PostgreSQL database
-            conn = await asyncpg.connect(user='postgres', database='canteen')
+            conn = await asyncpg.connect(user='postgres',password='05082002', database='canteen')
 
             # Check if the table exists
             table_exists = await conn.fetchval("""
@@ -81,21 +81,37 @@ class Database:
             if conn:
                 await conn.close()
 
-    async def fetch_products(self):
+    async def fetch_all_products(self):
+        conn = None
         try:
-            conn = await asyncpg.connect(user='postgres', database='canteen')
-            rows = await conn.fetch("SELECT * FROM canteen ORDER BY year ASC, month ASC")
-
+            conn = await asyncpg.connect(user='postgres',password='05082002', database='canteen')
+            rows = await conn.fetch("SELECT * FROM canteen WHERE net_qty>400 ORDER BY year ASC, month ASC")
             data = [dict(row) for row in rows]
-
             return data
         finally:
             if conn:
                 await conn.close()
 
-    async def fetch_product(self, product_id):
+
+    async def fetch_products(self, limit: int = 10, offset: int = 0):
+        conn = None
         try:
-            conn = await asyncpg.connect(user='postgres', database='canteen')
+            conn = await asyncpg.connect(user='postgres', password='05082002', database='canteen')
+            
+            query = "SELECT * FROM canteen ORDER BY year ASC, month ASC LIMIT $1 OFFSET $2"
+            rows = await conn.fetch(query, limit, offset)
+            data = [dict(row) for row in rows]
+            return data
+        finally:
+            if conn:
+                await conn.close()
+                
+                
+
+async def fetch_product(self, product_id):
+        conn=None
+        try:
+            conn = await asyncpg.connect(user='postgres',password='05082002', database='canteen')
             rows = await conn.fetch("SELECT * FROM canteen WHERE pluno = $1 ORDER BY year ASC, month ASC", product_id)
 
             data = [dict(row) for row in rows]
