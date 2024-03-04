@@ -108,7 +108,7 @@ class Database:
                 
                 
 
-async def fetch_product(self, product_id):
+    async def fetch_product(self, product_id):
         conn=None
         try:
             conn = await asyncpg.connect(user='postgres',password='05082002', database='canteen')
@@ -120,3 +120,16 @@ async def fetch_product(self, product_id):
         finally:
             if conn:
                 await conn.close()
+
+    async def fetch_prediction_product(self, product_id):
+        conn = None
+        try:
+            conn = await asyncpg.connect(user='postgres',password='05082002', database='canteen')
+            rows = await conn.fetch("SELECT * FROM canteen WHERE pluno = $1 ORDER BY year DESC, month DESC LIMIT 5", product_id)
+
+            data = [dict(row) for row in rows]
+
+            return data
+        finally:
+            if conn:
+                await conn.close()                
