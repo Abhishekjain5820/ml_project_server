@@ -3,6 +3,7 @@ from fastapi import FastAPI,Query,UploadFile,File, HTTPException
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from database import Database
 import math
+import asyncio
 from fastapi.middleware.cors import CORSMiddleware
 database = Database()
 app = FastAPI()
@@ -31,11 +32,24 @@ async def shutdown():
 async def root(limit: int = 10, offset: int = 0):
     return await database.fetch_products(limit, offset)
 @app.get("/all_inventory")
-async def get_all_inventory():
-    return await database.fetch_all_products()
+async def get_all_inventory(limit: int = 10, offset: int = 0):
+    return await database.fetch_all_products(limit,offset)
+@app.get("/all_inventory_count")
+async def get_all_inventory_count():
+    return await database.fetch_all_products_count()
 @app.get("/inventory/{product}")
 async def say_hello(product: str):
     return await database.fetch_product(product)
+@app.get("/predict/{month}")
+async def get_products_by_month(month: str):
+    products = await database.fetch_products_by_month(month)
+    return {"products": products}
+
+@app.get("/predict/pluno/{pluno}/{month}")
+async def get_prediction_by_pluno(pluno: str,month:str):
+    predictions = await database.fetch_prediction_by_pluno(pluno,month)
+    return {"predictions": predictions}
+
 @app.get("/prediction/{product}")
 async def fetch_prediction(product: str):
     datas = await database.fetch_prediction_product(product)
@@ -97,3 +111,7 @@ async def predict_product_stock(series, column, month):
     req_for = forecast_values_df[month-1]
     return req_for  # Return the result instead of updating a global variable
 
+#search product by name 
+@app.get("/inventory/search/{name}")
+async def search_product_by_name(name: str, limit: int = 10, offset: int = 0):
+    return await database.search_product_by_name(name,limit,offset)
