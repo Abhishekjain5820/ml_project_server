@@ -104,14 +104,9 @@ class Database:
             if conn:
                 await conn.close()
 
-<<<<<<< HEAD
 
     # async def fetch_products(self, limit: int = 10, offset: int = 0):
     async def fetch_products(self, limit: int = 10, offset: int = 0):
-=======
-    
-    async def fetch_products(self, limit: int = 10, offset: int = 1):
->>>>>>> a6a417303290320545641839f24a453e26ba8021
         conn = None
         try:
             conn = await asyncpg.connect(user='postgres', password='root', database='canteen')
@@ -215,32 +210,11 @@ class Database:
 
         conn = None
         try:
-<<<<<<< HEAD
             conn = await asyncpg.connect(user='postgres', password='root', database='canteen')
             rows = await conn.fetch("SELECT * FROM canteen WHERE pluno = $1 ORDER BY year ASC, month ASC", product_id)
 
             data = [dict(row) for row in rows]
 
-=======
-            conn = await asyncpg.connect(user='postgres', password='05082002', database='canteen')
-            query = """
-                SELECT * 
-                FROM canteen 
-                WHERE month = $1
-                ORDER BY year ASC, month ASC
-            """
-            rows = await conn.fetch(query, month)
-            data = []
-            for row in rows:
-                # Convert asyncpg.Record to dictionary
-                row_dict = dict(row)
-                # Calculate prediction for each row
-                prediction = row_dict['opening_stock'] - (row_dict['closing_stock'] + row_dict['net_qty'])
-                # Add prediction to the dictionary
-                row_dict['prediction'] = prediction
-                # Append modified dictionary to data list
-                data.append(row_dict)
->>>>>>> a6a417303290320545641839f24a453e26ba8021
             return data
            
         finally:

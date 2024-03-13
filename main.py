@@ -41,10 +41,6 @@ async def get_all_inventory_count():
 @app.get("/inventory/{product}")
 async def say_hello(product: str):
     return await database.fetch_product(product)
-<<<<<<< HEAD
-=======
-
->>>>>>> a6a417303290320545641839f24a453e26ba8021
 @app.get("/predict/{month}")
 async def get_products_by_month(month: str):
     products = await database.fetch_products_by_month(month)
@@ -118,18 +114,8 @@ async def fetch_prediction(product: str):
 #     return req_for  # Return the result instead of updating a global variable
     
 
-<<<<<<< HEAD
 #search product by name 
 @app.get("/inventory/search/{name}")
 async def search_product_by_name(name: str, limit: int = 10, offset: int = 0):
     return await database.search_product_by_name(name,limit,offset)
-=======
-# async def main():
-#     month = 3  # Example month
-#     print("method called with",month)
-#     predictions = await predict_future_sales(month)
-#     print(predictions)
-
-# if __name__ == "__main__":
-#     asyncio.run(main())
->>>>>>> a6a417303290320545641839f24a453e26ba8021
+ 
