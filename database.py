@@ -1,6 +1,7 @@
 import asyncpg
 from asyncpg.pool import Pool
 import csv
+
 class Database:
     def __init__(self):
         self.pool: Pool = None
@@ -92,8 +93,8 @@ class Database:
             if conn:
                 await conn.close()
 
-
-    async def fetch_products(self, limit: int = 10, offset: int = 0):
+    
+    async def fetch_products(self, limit: int = 10, offset: int = 1):
         conn = None
         try:
             conn = await asyncpg.connect(user='postgres', password='05082002', database='canteen')
@@ -108,18 +109,82 @@ class Database:
                 
                 
 
-    async def fetch_product(self, product_id):
-        conn=None
+
+   
+
+    async def fetch_products_by_month(self,month: str):
+        
+      
+        month_number = month
+       
+        if month_number is None:
+            raise ValueError("Invalid month name")
+
+        conn = None
         try:
-            conn = await asyncpg.connect(user='postgres',password='05082002', database='canteen')
-            rows = await conn.fetch("SELECT * FROM canteen WHERE pluno = $1 ORDER BY year ASC, month ASC", product_id)
-
-            data = [dict(row) for row in rows]
-
+            conn = await asyncpg.connect(user='postgres', password='05082002', database='canteen')
+            query = """
+                SELECT * 
+                FROM canteen 
+                WHERE month = $1
+                ORDER BY year ASC, month ASC
+            """
+            rows = await conn.fetch(query, month)
+            data = []
+            for row in rows:
+                # Convert asyncpg.Record to dictionary
+                row_dict = dict(row)
+                # Calculate prediction for each row
+                prediction = row_dict['opening_stock'] - (row_dict['closing_stock'] + row_dict['net_qty'])
+                # Add prediction to the dictionary
+                row_dict['prediction'] = prediction
+                # Append modified dictionary to data list
+                data.append(row_dict)
             return data
+           
         finally:
             if conn:
                 await conn.close()
+
+    async def fetch_prediction_by_pluno(self, pluno: str,month:str):
+        conn = None
+        print(pluno)
+        try:
+            conn = await asyncpg.connect(user='postgres', password='05082002', database='canteen')
+            query = """
+                SELECT *, (-(opening_stock - (closing_stock + net_qty))) AS prediction
+                FROM canteen 
+                WHERE pluno = $1 and month=$2
+                ORDER BY year ASC, month ASC
+            """
+            rows = await conn.fetch(query, pluno,month)
+            print(rows)
+            # data = []
+            # for row in rows:
+            #     # Convert asyncpg.Record to dictionary
+            #     row_dict = dict(row)
+            #     # Add prediction to the dictionary
+            #     row_dict['prediction'] = row_dict['opening_stock'] - (row_dict['closing_stock'] + row_dict['net_qty'])
+            #     # Append modified dictionary to data list
+            #     data.append(row_dict)
+            return rows
+        finally:
+            if conn:
+                await conn.close()
+                
+
+        async def fetch_product(self, product_id):
+            conn=None
+            try:
+                conn = await asyncpg.connect(user='postgres',password='05082002', database='canteen')
+                rows = await conn.fetch("SELECT * FROM canteen WHERE pluno = $1 ORDER BY year ASC, month ASC", product_id)
+
+                data = [dict(row) for row in rows]
+
+                return data
+            finally:
+                if conn:
+                    await conn.close()
 
     async def fetch_prediction_product(self, product_id):
         conn = None
